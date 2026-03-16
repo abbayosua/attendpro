@@ -1,0 +1,359 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ====================
+// Organization & Tenant
+// ====================
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logo        String?
+  address     String?
+  phone       String?
+  email       String?
+  
+  // Plan & Limits
+  plan        Plan     @default(FREE)
+  maxUsers    Int      @default(10)
+  
+  // Settings
+  workStartTime String  @default("09:00")
+  workEndTime   String  @default("18:00")
+  breakStartTime String @default("12:00")
+  breakEndTime   String @default("13:00")
+  lateTolerance  Int    @default(15) // in minutes
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  users       User[]
+  departments Department[]
+  holidays    Holiday[]
+  settings    Settings?
+}
+
+model Settings {
+  id             String   @id @default(cuid())
+  organizationId String   @unique
+  
+  // Notifications
+  notifyClockIn    Boolean @default(true)
+  notifyClockOut   Boolean @default(true)
+  notifyLate       Boolean @default(true)
+  notifyLeave      Boolean @default(true)
+  
+  // Security
+  requireGps       Boolean @default(true)
+  requirePhoto     Boolean @default(false)
+  gpsRadius        Int     @default(100) // in meters
+  
+  // Location
+  officeLatitude   Float?
+  officeLongitude  Float?
+  officeAddress    String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+// ====================
+// User & Authentication
+// ====================
+
+enum Plan {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum Role {
+  SUPER_ADMIN  // Platform admin
+  ADMIN        // Organization admin
+  HR           // HR staff
+  MANAGER      // Department manager
+  EMPLOYEE     // Regular employee
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  password       String   // Hashed password
+  name           String
+  avatar         String?
+  phone          String?
+  role           Role     @default(EMPLOYEE)
+  
+  // Employment Details
+  employeeId     String?  // Employee ID from company
+  position       String?
+  joinDate       DateTime?
+  
+  // Relations
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  departmentId   String?
+  department     Department? @relation("DepartmentMembers", fields: [departmentId], references: [id])
+  
+  managerId      String?
+  manager        User?      @relation("ManagerTeam", fields: [managerId], references: [id], onDelete: SetNull)
+  teamMembers    User[]     @relation("ManagerTeam")
+  
+  // Manager of department
+  managedDepartment Department? @relation("DepartmentManager")
+  
+  // Status
+  isActive       Boolean  @default(true)
+  emailVerified  DateTime?
+  
+  // Timestamps
+  lastLoginAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relations
+  attendances    Attendance[]
+  leaveRequests  LeaveRequest[]
+  approvedLeaves LeaveRequest[] @relation("LeaveApprover")
+  leaveQuotas    LeaveQuota[]
+  sessions       Session[]
+  
+  @@index([organizationId])
+  @@index([departmentId])
+}
+
+// ====================
+// Department
+// ====================
+
+model Department {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  managerId      String?  @unique
+  manager        User?   @relation("DepartmentManager", fields: [managerId], references: [id], onDelete: SetNull)
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  users          User[]   @relation("DepartmentMembers")
+  
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+// ====================
+// Attendance
+// ====================
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  LEAVE
+  HOLIDAY
+}
+
+model Attendance {
+  id             String   @id @default(cuid())
+  date           DateTime 
+  
+  // Clock Times
+  clockIn        DateTime?
+  clockOut       DateTime?
+  
+  // Status
+  status         AttendanceStatus @default(PRESENT)
+  
+  // Location Data
+  clockInLat     Float?
+  clockInLng     Float?
+  clockInAddress String?
+  clockOutLat    Float?
+  clockOutLng    Float?
+  clockOutAddress String?
+  
+  // Photo Evidence (base64 or URL)
+  clockInPhoto   String?  // Selfie photo at clock in
+  clockOutPhoto  String?  // Selfie photo at clock out
+  
+  // Additional Info
+  notes          String?
+  workHours      Float?   // Calculated work hours in decimal
+  
+  // Relations
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+}
+
+// ====================
+// Leave Management
+// ====================
+
+enum LeaveType {
+  ANNUAL     // Cuti tahunan
+  SICK       // Cuti sakit
+  EMERGENCY  // Cuti darurat
+  MATERNITY  // Cuti melahirkan
+  PATERNITY  // Cuti ayah
+  MARRIAGE   // Cuti menikah
+  OTHER      // Lainnya
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model LeaveRequest {
+  id             String   @id @default(cuid())
+  type           LeaveType
+  
+  // Dates
+  startDate      DateTime 
+  endDate        DateTime 
+  totalDays      Int      // Total days requested
+  
+  // Details
+  reason         String
+  attachment     String?  // File path for sick letter, etc
+  
+  // Status
+  status         LeaveStatus @default(PENDING)
+  rejectedReason String?
+  
+  // Relations
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  approvedById   String?
+  approver       User?    @relation("LeaveApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  
+  approvedAt     DateTime?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+}
+
+// ====================
+// Leave Quota (Yearly)
+// ====================
+
+model LeaveQuota {
+  id             String   @id @default(cuid())
+  year           Int
+  
+  // Quotas
+  annualTotal    Int      @default(12)
+  annualUsed     Int      @default(0)
+  sickTotal      Int      @default(14)
+  sickUsed       Int      @default(0)
+  emergencyTotal Int      @default(3)
+  emergencyUsed  Int      @default(0)
+  
+  // Relations
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@unique([userId, year])
+}
+
+// ====================
+// Holiday
+// ====================
+
+model Holiday {
+  id             String   @id @default(cuid())
+  name           String
+  date           DateTime 
+  isRecurring    Boolean  @default(false) // Repeat every year
+  
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@unique([organizationId, date])
+}
+
+// ====================
+// Session (for Auth)
+// ====================
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  token        String   @unique
+  expiresAt    DateTime
+  
+  ipAddress    String?
+  userAgent    String?
+  
+  createdAt    DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+}
+
+// ====================
+// Audit Log
+// ====================
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  action         String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, etc
+  entity         String   // User, Attendance, LeaveRequest, etc
+  entityId       String?
+  
+  oldData        String?  // JSON string
+  newData        String?  // JSON string
+  
+  userId         String?
+  userName       String?
+  
+  organizationId String?
+  ipAddress      String?
+  userAgent      String?
+  
+  createdAt      DateTime @default(now())
+  
+  @@index([organizationId])
+  @@index([userId])
+  @@index([entity, entityId])
+}
