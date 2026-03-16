@@ -4,19 +4,5 @@
   "buildCommand": "bun run db:generate && next build",
   "installCommand": "bun install",
   "devCommand": "bun run dev",
-  "regions": ["sin1"],
-  "env": {
-    "DATABASE_URL": {
-      "description": "Supabase PostgreSQL connection string (pooler)"
-    },
-    "NEXT_PUBLIC_SUPABASE_URL": {
-      "description": "Supabase project URL"
-    },
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
-      "description": "Supabase anonymous key (public)"
-    },
-    "SUPABASE_SERVICE_ROLE_KEY": {
-      "description": "Supabase service role key (secret)"
-    }
-  }
+  "regions": ["sin1"]
 }
