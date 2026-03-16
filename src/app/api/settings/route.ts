@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { validateSession } from '@/lib/auth'
+import { getAuthUser, unauthorizedResponse } from '@/lib/auth-helpers'
 
 // GET /api/settings - Get organization settings
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const sessionResult = await validateSession(token)
-    if (!sessionResult.valid || !sessionResult.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     // Get user with organization
-    const user = await db.user.findUnique({
-      where: { id: sessionResult.user.id },
+    const dbUser = await db.user.findUnique({
+      where: { id: user.id },
       include: {
         organization: {
           include: { settings: true }
@@ -25,11 +21,11 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    if (!user || !user.organization) {
+    if (!dbUser || !dbUser.organization) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
     }
 
-    const org = user.organization
+    const org = dbUser.organization
 
     // Get or create settings
     let settings = org.settings
@@ -82,32 +78,28 @@ export async function GET(request: NextRequest) {
 // PUT /api/settings - Update organization settings
 export async function PUT(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const sessionResult = await validateSession(token)
-    if (!sessionResult.valid || !sessionResult.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     // Check if user is admin
-    const user = await db.user.findUnique({
-      where: { id: sessionResult.user.id },
+    const dbUser = await db.user.findUnique({
+      where: { id: user.id },
       include: { organization: { include: { settings: true } } }
     })
 
-    if (!user || !user.organization) {
+    if (!dbUser || !dbUser.organization) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
     }
 
-    if (!['ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+    if (!['ADMIN', 'SUPER_ADMIN'].includes(dbUser.role)) {
       return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
     }
 
     const body = await request.json()
-    const orgId = user.organization.id
+    const orgId = dbUser.organization.id
 
     // Update Organization fields
     const orgUpdateData: any = {}
@@ -143,7 +135,7 @@ export async function PUT(request: NextRequest) {
     if (body.officeAddress !== undefined) settingsUpdateData.officeAddress = body.officeAddress
 
     // Get or create settings, then update
-    let settings = user.organization.settings
+    let settings = dbUser.organization.settings
     if (!settings) {
       settings = await db.settings.create({
         data: {

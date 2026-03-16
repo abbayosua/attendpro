@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession } from '@/lib/auth'
+import { getAuthUser, unauthorizedResponse } from '@/lib/auth-helpers'
 import { db } from '@/lib/db'
 import { AttendanceStatus, LeaveStatus } from '@prisma/client'
 
 // GET - Get reports
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'overview'
@@ -22,7 +18,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate')
     const departmentId = searchParams.get('departmentId')
 
-    const orgId = result.user.organizationId
+    const orgId = user.organizationId
 
     // Base date range
     const start = startDate ? new Date(startDate) : new Date(new Date().setDate(1)) // First day of month

@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession } from '@/lib/auth'
+import { getAuthUser, unauthorizedResponse } from '@/lib/auth-helpers'
 import { db } from '@/lib/db'
 import { LeaveStatus, LeaveType } from '@prisma/client'
 
 // GET - Get leave requests
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') as LeaveStatus | null
@@ -25,15 +21,15 @@ export async function GET(request: NextRequest) {
     const where: any = {}
 
     // Role-based access
-    if (result.user.role === 'EMPLOYEE') {
-      where.userId = result.user.id
+    if (user.role === 'EMPLOYEE') {
+      where.userId = user.id
     } else if (pending) {
       // Get pending requests for approval
       where.status = LeaveStatus.PENDING
       
       // Manager can only see their team's requests
-      if (result.user.role === 'MANAGER') {
-        where.user = { managerId: result.user.id }
+      if (user.role === 'MANAGER') {
+        where.user = { managerId: user.id }
       }
     } else {
       if (userId) where.userId = userId
@@ -76,15 +72,11 @@ export async function GET(request: NextRequest) {
 // POST - Create leave request
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     const body = await request.json()
     const { type, startDate, endDate, reason, attachment } = body
@@ -104,7 +96,7 @@ export async function POST(request: NextRequest) {
 
     const leaveRequest = await db.leaveRequest.create({
       data: {
-        userId: result.user.id,
+        userId: user.id,
         type: type as LeaveType,
         startDate: start,
         endDate: end,
@@ -136,18 +128,14 @@ export async function POST(request: NextRequest) {
 // PUT - Approve/Reject leave request
 export async function PUT(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     // Check permission
-    if (!['ADMIN', 'HR', 'MANAGER'].includes(result.user.role)) {
+    if (!['ADMIN', 'HR', 'MANAGER'].includes(user.role)) {
       return NextResponse.json(
         { success: false, message: 'Tidak memiliki izin' },
         { status: 403 }
@@ -170,7 +158,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Manager can only approve their team
-    if (result.user.role === 'MANAGER' && leaveRequest.user.managerId !== result.user.id) {
+    if (user.role === 'MANAGER' && leaveRequest.user.managerId !== user.id) {
       return NextResponse.json(
         { success: false, message: 'Tidak memiliki izin untuk pengajuan ini' },
         { status: 403 }
@@ -188,7 +176,7 @@ export async function PUT(request: NextRequest) {
       where: { id },
       data: {
         status: action === 'approve' ? LeaveStatus.APPROVED : LeaveStatus.REJECTED,
-        approvedById: result.user.id,
+        approvedById: user.id,
         approvedAt: new Date(),
         rejectedReason: action === 'reject' ? rejectedReason : null,
       },
@@ -245,15 +233,11 @@ export async function PUT(request: NextRequest) {
 // DELETE - Cancel leave request
 export async function DELETE(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
@@ -277,7 +261,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Only owner can cancel and only if pending
-    if (leaveRequest.userId !== result.user.id) {
+    if (leaveRequest.userId !== user.id) {
       return NextResponse.json(
         { success: false, message: 'Tidak memiliki izin' },
         { status: 403 }

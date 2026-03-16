@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!authData.user) {
+    if (!authData.user || !authData.session) {
       return NextResponse.json(
         { success: false, message: 'Login gagal' },
         { status: 401 }
@@ -104,6 +104,8 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Login berhasil',
       user: safeUser,
+      // Return the access token for cross-origin/iframe usage
+      accessToken: authData.session.access_token,
     })
 
     // Copy cookies from supabase response to json response

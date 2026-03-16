@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession, hashPassword, canManageUser } from '@/lib/auth'
+import { hashPassword, canManageUser } from '@/lib/auth'
+import { getAuthUser, unauthorizedResponse } from '@/lib/auth-helpers'
 import { db } from '@/lib/db'
 import { Role } from '@prisma/client'
 
 // GET - Get employees
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     const { searchParams } = new URL(request.url)
     const role = searchParams.get('role') as Role | null
@@ -23,12 +20,12 @@ export async function GET(request: NextRequest) {
 
     // Build query
     const where: any = {
-      organizationId: result.user.organizationId,
+      organizationId: user.organizationId,
       isActive: true,
     }
 
     // Exclude own account from list
-    where.NOT = { id: result.user.id }
+    where.NOT = { id: user.id }
 
     if (role) where.role = role
     if (departmentId) where.departmentId = departmentId
@@ -73,18 +70,14 @@ export async function GET(request: NextRequest) {
 // POST - Create employee
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     // Check permission
-    if (!['ADMIN', 'HR'].includes(result.user.role)) {
+    if (!['ADMIN', 'HR'].includes(user.role)) {
       return NextResponse.json(
         { success: false, message: 'Tidak memiliki izin' },
         { status: 403 }
@@ -126,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     // Check if can manage this role
     const targetRole = role as Role || 'EMPLOYEE'
-    if (!canManageUser(result.user.role, targetRole)) {
+    if (!canManageUser(user.role, targetRole)) {
       return NextResponse.json(
         { success: false, message: 'Tidak dapat membuat user dengan role tersebut' },
         { status: 403 }
@@ -135,13 +128,13 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await hashPassword(password)
 
-    const user = await db.user.create({
+    const newUser = await db.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
         role: targetRole,
-        organizationId: result.user.organizationId,
+        organizationId: user.organizationId,
         departmentId,
         position,
         phone,
@@ -163,7 +156,7 @@ export async function POST(request: NextRequest) {
     const year = new Date().getFullYear()
     await db.leaveQuota.create({
       data: {
-        userId: user.id,
+        userId: newUser.id,
         year,
         annualTotal: 12,
         annualUsed: 0,
@@ -177,7 +170,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Karyawan berhasil ditambahkan',
-      data: user,
+      data: newUser,
     })
   } catch (error) {
     console.error('Create employee error:', error)
@@ -191,15 +184,11 @@ export async function POST(request: NextRequest) {
 // PUT - Update employee
 export async function PUT(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     const body = await request.json()
     const { id, ...updateData } = body
@@ -223,8 +212,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check permission
-    const isSelf = result.user.id === id
-    const isAdmin = ['ADMIN', 'HR'].includes(result.user.role)
+    const isSelf = user.id === id
+    const isAdmin = ['ADMIN', 'HR'].includes(user.role)
 
     if (!isSelf && !isAdmin) {
       return NextResponse.json(
@@ -234,7 +223,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // If changing role, check if can manage
-    if (updateData.role && !canManageUser(result.user.role, updateData.role as Role)) {
+    if (updateData.role && !canManageUser(user.role, updateData.role as Role)) {
       return NextResponse.json(
         { success: false, message: 'Tidak dapat mengubah ke role tersebut' },
         { status: 403 }
@@ -264,7 +253,7 @@ export async function PUT(request: NextRequest) {
       data.password = await hashPassword(updateData.password)
     }
 
-    const user = await db.user.update({
+    const updatedUser = await db.user.update({
       where: { id },
       data,
       select: {
@@ -283,7 +272,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Data berhasil diperbarui',
-      data: user,
+      data: updatedUser,
     })
   } catch (error) {
     console.error('Update employee error:', error)
@@ -297,18 +286,14 @@ export async function PUT(request: NextRequest) {
 // DELETE - Deactivate employee
 export async function DELETE(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     // Check permission
-    if (!['ADMIN', 'HR'].includes(result.user.role)) {
+    if (!['ADMIN', 'HR'].includes(user.role)) {
       return NextResponse.json(
         { success: false, message: 'Tidak memiliki izin' },
         { status: 403 }
@@ -326,7 +311,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Cannot delete self
-    if (id === result.user.id) {
+    if (id === user.id) {
       return NextResponse.json(
         { success: false, message: 'Tidak dapat menghapus akun sendiri' },
         { status: 400 }
@@ -345,7 +330,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check role permission
-    if (!canManageUser(result.user.role, targetUser.role)) {
+    if (!canManageUser(user.role, targetUser.role)) {
       return NextResponse.json(
         { success: false, message: 'Tidak dapat menghapus user dengan role tersebut' },
         { status: 403 }

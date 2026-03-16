@@ -31,7 +31,7 @@ export async function createSupabaseServerClient() {
 
 // For use in API routes with NextRequest
 export function createSupabaseReqResClient(request: NextRequest) {
-  const response = NextResponse.next({ request })
+  let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -42,8 +42,11 @@ export function createSupabaseReqResClient(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+          // Update both request and response cookies
+          cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value)
+          })
+          cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options)
           })
         },

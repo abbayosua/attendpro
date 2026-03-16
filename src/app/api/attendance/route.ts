@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession } from '@/lib/auth'
+import { getAuthUser, unauthorizedResponse } from '@/lib/auth-helpers'
 import { db } from '@/lib/db'
 import { AttendanceStatus } from '@prisma/client'
 
 // GET - Get attendance records
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
@@ -26,8 +22,8 @@ export async function GET(request: NextRequest) {
     const where: any = {}
 
     // Role-based access
-    if (result.user.role === 'EMPLOYEE') {
-      where.userId = result.user.id
+    if (user.role === 'EMPLOYEE') {
+      where.userId = user.id
     } else if (userId) {
       where.userId = userId
     }
@@ -77,15 +73,11 @@ export async function GET(request: NextRequest) {
 // POST - Clock In
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     const body = await request.json()
     const { action, latitude, longitude, address, notes, photo } = body
@@ -98,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     // Get organization settings for late tolerance
     const org = await db.organization.findUnique({
-      where: { id: result.user.organizationId },
+      where: { id: user.organizationId },
       include: { settings: true }
     })
 
@@ -112,7 +104,7 @@ export async function POST(request: NextRequest) {
       const existing = await db.attendance.findUnique({
         where: {
           userId_date: {
-            userId: result.user.id,
+            userId: user.id,
             date: today,
           }
         }
@@ -134,7 +126,7 @@ export async function POST(request: NextRequest) {
       // Check if holiday
       const holiday = await db.holiday.findFirst({
         where: {
-          organizationId: result.user.organizationId,
+          organizationId: user.organizationId,
           date: today,
         }
       })
@@ -145,7 +137,7 @@ export async function POST(request: NextRequest) {
       const attendance = await db.attendance.upsert({
         where: {
           userId_date: {
-            userId: result.user.id,
+            userId: user.id,
             date: today,
           }
         },
@@ -159,7 +151,7 @@ export async function POST(request: NextRequest) {
           notes,
         },
         create: {
-          userId: result.user.id,
+          userId: user.id,
           date: today,
           clockIn: now,
           status,
@@ -190,7 +182,7 @@ export async function POST(request: NextRequest) {
       const existing = await db.attendance.findUnique({
         where: {
           userId_date: {
-            userId: result.user.id,
+            userId: user.id,
             date: today,
           }
         }

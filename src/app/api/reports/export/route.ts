@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { validateSession } from '@/lib/auth'
+import { getAuthUser, unauthorizedResponse } from '@/lib/auth-helpers'
 import * as XLSX from 'xlsx'
 
 // GET /api/reports/export - Export attendance report to Excel
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const sessionResult = await validateSession(token)
-    if (!sessionResult.valid || !sessionResult.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'attendance'
@@ -23,12 +19,12 @@ export async function GET(request: NextRequest) {
     const departmentId = searchParams.get('departmentId')
 
     // Get user with organization
-    const user = await db.user.findUnique({
-      where: { id: sessionResult.user.id },
+    const dbUser = await db.user.findUnique({
+      where: { id: user.id },
       include: { organization: true }
     })
 
-    if (!user || !user.organization) {
+    if (!dbUser || !dbUser.organization) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
     }
 

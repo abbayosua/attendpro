@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession } from '@/lib/auth'
+import { getAuthUser, unauthorizedResponse } from '@/lib/auth-helpers'
 import { db } from '@/lib/db'
 
 // GET - Get departments
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     const departments = await db.department.findMany({
       where: {
-        organizationId: result.user.organizationId,
+        organizationId: user.organizationId,
       },
       include: {
         manager: {
@@ -49,18 +45,14 @@ export async function GET(request: NextRequest) {
 // POST - Create department
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     // Check permission
-    if (!['ADMIN', 'HR'].includes(result.user.role)) {
+    if (!['ADMIN', 'HR'].includes(user.role)) {
       return NextResponse.json(
         { success: false, message: 'Tidak memiliki izin' },
         { status: 403 }
@@ -80,7 +72,7 @@ export async function POST(request: NextRequest) {
     // Check if department name exists
     const existing = await db.department.findFirst({
       where: {
-        organizationId: result.user.organizationId,
+        organizationId: user.organizationId,
         name,
       }
     })
@@ -97,7 +89,7 @@ export async function POST(request: NextRequest) {
         name,
         description,
         managerId,
-        organizationId: result.user.organizationId,
+        organizationId: user.organizationId,
       },
       include: {
         manager: {
@@ -123,18 +115,14 @@ export async function POST(request: NextRequest) {
 // PUT - Update department
 export async function PUT(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     // Check permission
-    if (!['ADMIN', 'HR'].includes(result.user.role)) {
+    if (!['ADMIN', 'HR'].includes(user.role)) {
       return NextResponse.json(
         { success: false, message: 'Tidak memiliki izin' },
         { status: 403 }
@@ -155,7 +143,7 @@ export async function PUT(request: NextRequest) {
     if (name) {
       const existing = await db.department.findFirst({
         where: {
-          organizationId: result.user.organizationId,
+          organizationId: user.organizationId,
           name,
           NOT: { id }
         }
@@ -200,18 +188,14 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete department
 export async function DELETE(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+    const authResult = await getAuthUser(request)
+    if (!authResult.success || !authResult.user) {
+      return unauthorizedResponse(authResult.error)
     }
-
-    const result = await validateSession(token)
-    if (!result.valid || !result.user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
-    }
+    const user = authResult.user
 
     // Check permission
-    if (!['ADMIN', 'HR'].includes(result.user.role)) {
+    if (!['ADMIN', 'HR'].includes(user.role)) {
       return NextResponse.json(
         { success: false, message: 'Tidak memiliki izin' },
         { status: 403 }

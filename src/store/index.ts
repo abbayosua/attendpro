@@ -113,14 +113,34 @@ export interface Settings {
   orgLogo: string | null
 }
 
+// Store access token for API calls
+let accessToken: string | null = null
+
 // API Helper
+function getAccessToken(): string | null {
+  return accessToken
+}
+
+function setAccessToken(token: string | null) {
+  accessToken = token
+}
+
 async function apiCall(endpoint: string, options: RequestInit = {}) {
+  const token = getAccessToken()
+  
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  }
+  
+  // Add Authorization header if we have a token (for cross-origin/iframe usage)
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
   const response = await fetch(endpoint, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
     credentials: 'include',
   })
 
@@ -244,6 +264,10 @@ export const useStore = create<AppState>()(
           })
           
           if (data.success) {
+            // Store the access token for cross-origin API calls
+            if (data.accessToken) {
+              setAccessToken(data.accessToken)
+            }
             set({ 
               currentUser: data.user, 
               isAuthenticated: true, 
@@ -263,6 +287,8 @@ export const useStore = create<AppState>()(
         } catch {
           // Ignore logout errors
         }
+        // Clear the access token
+        setAccessToken(null)
         set({ 
           currentUser: null, 
           isAuthenticated: false, 
