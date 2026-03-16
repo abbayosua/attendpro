@@ -1,22 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { deleteSession } from '@/lib/auth'
+import { createSupabaseReqResClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
+    const { supabase, response } = createSupabaseReqResClient(request)
 
-    if (token) {
-      await deleteSession(token)
-    }
+    // Sign out from Supabase Auth
+    await supabase.auth.signOut()
 
-    const response = NextResponse.json({
+    const jsonResponse = NextResponse.json({
       success: true,
       message: 'Logout berhasil',
     })
 
-    response.cookies.delete('auth-token')
+    // Clear cookies
+    jsonResponse.cookies.delete('auth-token')
+    response?.cookies.getAll().forEach(cookie => {
+      jsonResponse.cookies.delete(cookie.name)
+    })
 
-    return response
+    return jsonResponse
   } catch (error) {
     console.error('Logout error:', error)
     return NextResponse.json(

@@ -1,30 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateSession, sanitizeUser } from '@/lib/auth'
+import { createSupabaseReqResClient } from '@/lib/supabase/server'
+import { db } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth-token')?.value
+    const { supabase } = createSupabaseReqResClient(request)
 
-    if (!token) {
+    // Get current user from Supabase Auth
+    const { data: { user: authUser }, error } = await supabase.auth.getUser()
+
+    if (error || !authUser) {
       return NextResponse.json(
         { success: false, message: 'Tidak ada session', user: null },
         { status: 401 }
       )
     }
 
-    const result = await validateSession(token)
+    // Get user from our database
+    const user = await db.user.findUnique({
+      where: { authId: authUser.id },
+      include: {
+        organization: true,
+        department: true,
+        manager: {
+          select: { id: true, name: true, email: true }
+        }
+      }
+    })
 
-    if (!result.valid || !result.user) {
+    if (!user) {
       return NextResponse.json(
-        { success: false, message: 'Session tidak valid', user: null },
-        { status: 401 }
+        { success: false, message: 'User tidak ditemukan', user: null },
+        { status: 404 }
       )
     }
+
+    const { password: _, ...safeUser } = user
 
     return NextResponse.json({
       success: true,
       message: 'Session valid',
-      user: sanitizeUser(result.user),
+      user: safeUser,
     })
   } catch (error) {
     console.error('Session check error:', error)
