@@ -43,38 +43,14 @@ export async function middleware(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Refresh session by calling getUser() - this updates cookies if needed
+  await supabase.auth.getUser()
 
-  // Protected routes that require authentication
-  const protectedPaths = [
-    '/dashboard',
-    '/attendance',
-    '/leave',
-    '/reports',
-    '/employees',
-    '/departments',
-    '/settings',
-  ]
-
-  const isProtectedPath = protectedPaths.some(path =>
-    request.nextUrl.pathname.startsWith(path)
-  )
-
-  if (isProtectedPath && !user) {
-    // Redirect to login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/'
-    return NextResponse.redirect(url)
-  }
-
-  // Redirect logged-in users away from login page
-  if (request.nextUrl.pathname === '/' && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
-  }
+  // This is a Single Page Application (SPA) with client-side routing.
+  // All "pages" (dashboard, attendance, etc.) are rendered client-side
+  // based on the currentView state in the store.
+  // Do not redirect here - let the client-side handle routing based on auth state.
+  // The checkSession() function in the store determines which view to show.
 
   return supabaseResponse
 }
