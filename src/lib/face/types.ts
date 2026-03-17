@@ -35,6 +35,14 @@ export interface LivenessResult {
   timestamp: number
 }
 
+// Single challenge result
+export interface ChallengeResult {
+  type: LivenessChallengeType
+  success: boolean
+  score: number
+  timestamp: number
+}
+
 // Face registration result
 export interface FaceRegistrationResult {
   success: boolean
@@ -51,57 +59,6 @@ export interface FaceVerificationResult {
   matchScore?: number
   livenessScore?: number
   livenessChallenge?: LivenessChallengeType
-}
-
-// Face status from API
-export interface FaceStatus {
-  success: boolean
-  registered: boolean
-  registeredAt?: string
-  photoUrl?: string
-  settings: FaceRecognitionSettings
-}
-
-// Face recognition settings from organization
-export interface FaceRecognitionSettings {
-  requireFaceRecognition: boolean
-  requireLivenessDetection: boolean
-  faceMatchThreshold: number
-  livenessScoreThreshold: number
-  allowSelfFaceRegistration: boolean
-}
-
-// Camera state
-export interface CameraState {
-  isReady: boolean
-  isStreaming: boolean
-  error?: string
-  deviceId?: string
-}
-
-// Face detection state
-export interface FaceDetectionState {
-  faceDetected: boolean
-  facePosition: 'center' | 'left' | 'right' | 'top' | 'bottom' | 'none'
-  faceSize: 'too_small' | 'too_large' | 'ok'
-  multipleFaces: boolean
-}
-
-// Challenge state
-export interface ChallengeState {
-  currentChallenge: LivenessChallengeType | null
-  challengeIndex: number
-  totalChallenges: number
-  completed: boolean
-  results: ChallengeResult[]
-}
-
-// Single challenge result
-export interface ChallengeResult {
-  type: LivenessChallengeType
-  success: boolean
-  score: number
-  timestamp: number
 }
 
 // Eye Aspect Ratio data

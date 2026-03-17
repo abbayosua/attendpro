@@ -209,6 +209,12 @@ interface AppState {
   // Settings Actions
   fetchSettings: () => Promise<Settings | null>
   updateSettings: (settings: Partial<Settings>) => Promise<{ success: boolean; message: string }>
+  
+  // Face Registration Actions
+  registerFace: (embedding: number[], photoUrl?: string) => Promise<{ success: boolean; message: string }>
+  getFaceStatus: () => Promise<{ registered: boolean; registeredAt?: string; photoUrl?: string; settings?: any }>
+  deleteFaceRegistration: () => Promise<{ success: boolean; message: string }>
+  verifyFace: (embedding: number[], livenessScore?: number, livenessChallenge?: string) => Promise<{ success: boolean; verified: boolean; message: string; matchScore?: number }>
 }
 
 export const useStore = create<AppState>()(
@@ -566,6 +572,80 @@ export const useStore = create<AppState>()(
           return { success: data.success, message: data.message }
         } catch (error: any) {
           return { success: false, message: error.message }
+        }
+      },
+      
+      // Face Registration Actions
+      registerFace: async (embedding: number[], photoUrl?: string) => {
+        try {
+          const data = await apiCall('/api/face/register', {
+            method: 'POST',
+            body: JSON.stringify({ embedding, photoUrl }),
+          })
+          
+          if (data.success) {
+            // Update local user state
+            set((state) => ({
+              currentUser: state.currentUser 
+                ? { 
+                    ...state.currentUser, 
+                    faceRegistered: true,
+                    faceRegisteredAt: data.registeredAt || new Date().toISOString(),
+                  } 
+                : null,
+            }))
+          }
+          
+          return { success: data.success, message: data.message }
+        } catch (error: any) {
+          return { success: false, message: error.message }
+        }
+      },
+      
+      getFaceStatus: async () => {
+        try {
+          const data = await apiCall('/api/face/status')
+          return data
+        } catch {
+          return { registered: false }
+        }
+      },
+      
+      deleteFaceRegistration: async () => {
+        try {
+          const data = await apiCall('/api/face/register', {
+            method: 'DELETE',
+          })
+          
+          if (data.success) {
+            // Update local user state
+            set((state) => ({
+              currentUser: state.currentUser 
+                ? { 
+                    ...state.currentUser, 
+                    faceRegistered: false,
+                    faceRegisteredAt: undefined,
+                  } 
+                : null,
+            }))
+          }
+          
+          return { success: data.success, message: data.message }
+        } catch (error: any) {
+          return { success: false, message: error.message }
+        }
+      },
+      
+      verifyFace: async (embedding: number[], livenessScore?: number, livenessChallenge?: string) => {
+        try {
+          const data = await apiCall('/api/face/verify', {
+            method: 'POST',
+            body: JSON.stringify({ embedding, livenessScore, livenessChallenge }),
+          })
+          
+          return data
+        } catch (error: any) {
+          return { success: false, verified: false, message: error.message }
         }
       },
     }),
