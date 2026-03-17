@@ -19,6 +19,77 @@ const defaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = defaultIcon
 
+// Custom icon for current location (yellow/amber with pulse effect)
+const currentLocationIcon = L.divIcon({
+  className: 'custom-div-icon',
+  html: `
+    <div style="position: relative;">
+      <div style="
+        background-color: #f59e0b;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 2;
+      "></div>
+      <div style="
+        background-color: rgba(245, 158, 11, 0.3);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        animation: pulse 2s infinite;
+      "></div>
+    </div>
+    <style>
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.5); opacity: 0; }
+      }
+    </style>
+  `,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+})
+
+// Custom icon for selected position (green)
+const selectedPositionIcon = L.divIcon({
+  className: 'custom-div-icon',
+  html: `
+    <div style="
+      background-color: #22c55e;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    "></div>
+  `,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+})
+
+// Custom icon for office location (blue)
+const officeIcon = L.divIcon({
+  className: 'custom-div-icon',
+  html: `
+    <div style="
+      background-color: #3b82f6;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 3px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    "></div>
+  `,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+})
+
 // Custom hook for client-side only rendering
 function useIsClient() {
   return useSyncExternalStore(
@@ -36,6 +107,7 @@ interface MapPickerProps {
   height?: string
   showRadius?: boolean
   readOnly?: boolean
+  autoGetLocation?: boolean // Automatically get user's current location on mount
 }
 
 // Component to handle map invalidateSize
@@ -69,10 +141,12 @@ function MapPickerInner({
   height = '300px',
   showRadius = true,
   readOnly = false,
+  autoGetLocation = true,
 }: MapPickerProps) {
   const [position, setPosition] = useState<[number, number] | null>(
     initialPosition || null
   )
+  const [isFromGeolocation, setIsFromGeolocation] = useState(false)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mapInstance, setMapInstance] = useState<any>(null)
@@ -101,6 +175,7 @@ function MapPickerInner({
       
       const newPosition: [number, number] = [pos.coords.latitude, pos.coords.longitude]
       setPosition(newPosition)
+      setIsFromGeolocation(true)
       
       if (!readOnly && onPositionChange) {
         onPositionChange(pos.coords.latitude, pos.coords.longitude)
@@ -122,6 +197,7 @@ function MapPickerInner({
     
     const newPosition: [number, number] = [e.latlng.lat, e.latlng.lng]
     setPosition(newPosition)
+    setIsFromGeolocation(false)
     
     if (onPositionChange) {
       onPositionChange(e.latlng.lat, e.latlng.lng)
@@ -137,6 +213,13 @@ function MapPickerInner({
       mapInstance.off('click', handleMapClick)
     }
   }, [mapInstance, handleMapClick, readOnly])
+
+  // Auto-get current location on mount if no initial position and autoGetLocation is enabled
+  useEffect(() => {
+    if (autoGetLocation && !initialPosition && !readOnly && !position) {
+      handleGetCurrentLocation()
+    }
+  }, [])
 
   return (
     <div className="relative" style={{ height }}>
@@ -171,12 +254,17 @@ function MapPickerInner({
         />
 
         {/* Current/Selected Position Marker */}
-        {position && <Marker position={position} />}
+        {position && (
+          <Marker 
+            position={position} 
+            icon={isFromGeolocation ? currentLocationIcon : selectedPositionIcon}
+          />
+        )}
 
         {/* Office Location with Radius */}
         {officeLocation && showRadius && (
           <>
-            <Marker position={[officeLocation.lat, officeLocation.lng]} />
+            <Marker position={[officeLocation.lat, officeLocation.lng]} icon={officeIcon} />
             <Circle
               center={[officeLocation.lat, officeLocation.lng]}
               radius={gpsRadius}
@@ -214,6 +302,28 @@ function MapPickerInner({
             <p className="text-xs text-muted-foreground">
               {position[0].toFixed(6)}, {position[1].toFixed(6)}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Legend */}
+      {(position || officeLocation) && (
+        <div className="absolute bottom-2 right-2 z-[1000]">
+          <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-md">
+            <div className="flex flex-col gap-1 text-xs">
+              {position && (
+                <div className="flex items-center gap-2">
+                  <div className={`w-2.5 h-2.5 rounded-full ${isFromGeolocation ? 'bg-amber-500' : 'bg-green-500'}`} />
+                  <span className="text-muted-foreground">{isFromGeolocation ? 'Lokasi Anda' : 'Posisi Dipilih'}</span>
+                </div>
+              )}
+              {officeLocation && (
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                  <span className="text-muted-foreground">Kantor</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
