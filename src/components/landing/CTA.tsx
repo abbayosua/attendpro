@@ -21,7 +21,7 @@ export function CTA() {
             Siap Memulai?
           </h2>
           <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
-            Bergabung dengan 1000+ perusahaan yang telah mempercayakan manajemen kehadiran mereka kepada AbsenKu.
+            Join 1000+ companies that trust AttendPro for their attendance management.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 

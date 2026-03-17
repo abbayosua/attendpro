@@ -10,36 +10,36 @@ import {
 
 const faqs = [
   {
-    question: 'Bagaimana cara kerja AbsenKu?',
-    answer: 'Karyawan dapat melakukan clock in/out melalui aplikasi web atau mobile. Sistem akan mencatat waktu secara real-time. HR dan manager dapat melihat laporan kehadiran, menyetujui cuti, dan mengelola data karyawan melalui dashboard.',
+    question: 'How does AttendPro work?',
+    answer: 'Employees can clock in/out via web or mobile app. The system records time in real-time. HR and managers can view attendance reports, approve leave requests, and manage employee data through the dashboard.',
   },
   {
-    question: 'Apakah data karyawan kami aman?',
+    question: 'Is our employee data secure?',
     answer: 'Ya, keamanan data adalah prioritas utama kami. Semua data dienkripsi end-to-end, dan kami mengikuti standar keamanan ISO 27001. Data backup dilakukan setiap hari ke server yang terpisah.',
   },
   {
-    question: 'Apakah bisa menggunakan GPS untuk validasi lokasi?',
-    answer: 'Ya, AbsenKu mendukung GPS clock-in. Anda bisa mengatur radius lokasi kantor, dan sistem akan memvalidasi apakah karyawan berada di lokasi yang benar saat melakukan clock in/out.',
+    question: 'Can we use GPS for location validation?',
+    answer: 'Yes, AttendPro supports GPS clock-in. You can set the office location radius, and the system will validate whether employees are at the correct location when clocking in/out.',
   },
   {
-    question: 'Bagaimana dengan integrasi dengan sistem yang sudah ada?',
-    answer: 'AbsenKu menyediakan API terbuka yang memudahkan integrasi dengan sistem HRIS, payroll, atau aplikasi lain yang sudah Anda gunakan. Tim kami juga siap membantu proses integrasi.',
+    question: 'How about integration with existing systems?',
+    answer: 'AttendPro provides an open API that makes it easy to integrate with HRIS, payroll, or other applications you already use. Our team is also ready to help with the integration process.',
   },
   {
-    question: 'Apakah ada batasan jumlah karyawan?',
+    question: 'Is there a limit on the number of employees?',
     answer: 'Paket Starter mendukung hingga 10 karyawan secara gratis. Paket Professional mendukung hingga 50 karyawan, sedangkan Enterprise tidak memiliki batasan jumlah karyawan.',
   },
   {
-    question: 'Bagaimana proses migrasi dari sistem lama?',
+    question: 'How does the migration process work?',
     answer: 'Tim kami akan membantu proses migrasi data dari sistem lama Anda. Kami menyediakan template import data dan support dedicated untuk memastikan transisi berjalan lancar.',
   },
   {
-    question: 'Apakah ada aplikasi mobile?',
-    answer: 'Saat ini AbsenKu adalah web app yang sudah responsif dan bisa diakses dari browser smartphone manapun. Aplikasi mobile native sedang dalam pengembangan.',
+    question: 'Is there a mobile app?',
+    answer: 'Currently AttendPro is a responsive web app that can be accessed from any smartphone browser. A native mobile app is under development.',
   },
   {
-    question: 'Bagaimana sistem pembayarannya?',
-    answer: 'Pembayaran dilakukan secara bulanan atau tahunan melalui transfer bank atau kartu kredit. Untuk paket tahunan, Anda akan mendapat diskon 20%.',
+    question: 'How does the payment system work?',
+    answer: 'Payment is made monthly or annually via bank transfer or credit card. For annual packages, you get a 20% discount.',
   },
 ]
 
@@ -58,7 +58,7 @@ export function FAQ() {
             <span className="text-primary">Sering Diajukan</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Temukan jawaban untuk pertanyaan umum tentang AbsenKu.
+            Temukan jawaban untuk pertanyaan umum tentang AttendPro.
           </p>
         </motion.div>
 

@@ -74,7 +74,7 @@ export function Sidebar({ activeView, setActiveView }: SidebarProps) {
               <div className="bg-primary rounded-lg p-1.5">
                 <Clock className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="font-bold">AbsenKu</span>
+              <span className="font-bold">AttendPro</span>
             </motion.div>
           )}
         </AnimatePresence>

@@ -79,7 +79,7 @@ export function Hero() {
               <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
-                  <span className="font-semibold">AbsenKu Dashboard</span>
+                  <span className="font-semibold">AttendPro Dashboard</span>
                 </div>
                 <div className="text-sm opacity-80">Hari Ini</div>
               </div>

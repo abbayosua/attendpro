@@ -25,9 +25,9 @@ async function main() {
   console.log('🏢 Creating organization...')
   const organization = await prisma.organization.create({
     data: {
-      name: 'PT. AbsenKu Indonesia',
-      slug: 'absensiku',
-      email: 'info@absensiku.id',
+      name: 'AttendPro Inc.',
+      slug: 'attendpro',
+      email: 'info@attendpro.app',
       phone: '(021) 1234-5678',
       address: 'Jl. Sudirman No. 123, Jakarta Selatan',
       plan: Plan.PROFESSIONAL,
@@ -63,35 +63,35 @@ async function main() {
     prisma.department.create({
       data: {
         name: 'Engineering',
-        description: 'Tim pengembangan perangkat lunak',
+        description: 'Software development team',
         organizationId: organization.id,
       }
     }),
     prisma.department.create({
       data: {
         name: 'Human Resource',
-        description: 'Tim manajemen sumber daya manusia',
+        description: 'Human resources management team',
         organizationId: organization.id,
       }
     }),
     prisma.department.create({
       data: {
         name: 'Marketing',
-        description: 'Tim pemasaran dan promosi',
+        description: 'Marketing and promotion team',
         organizationId: organization.id,
       }
     }),
     prisma.department.create({
       data: {
         name: 'Finance',
-        description: 'Tim keuangan dan akuntansi',
+        description: 'Finance and accounting team',
         organizationId: organization.id,
       }
     }),
     prisma.department.create({
       data: {
         name: 'IT Support',
-        description: 'Tim dukungan teknologi informasi',
+        description: 'IT support team',
         organizationId: organization.id,
       }
     }),
@@ -106,7 +106,7 @@ async function main() {
   // Admin
   const admin = await prisma.user.create({
     data: {
-      email: 'admin@absensi.com',
+      email: 'admin@attendpro.app',
       password: hashedPassword,
       name: 'Admin User',
       role: Role.ADMIN,
@@ -120,7 +120,7 @@ async function main() {
   // HR
   const hr = await prisma.user.create({
     data: {
-      email: 'hr@absensi.com',
+      email: 'hr@attendpro.app',
       password: hashedPassword,
       name: 'Sarah Johnson',
       role: Role.HR,
@@ -140,7 +140,7 @@ async function main() {
   // Engineering Manager
   const engineeringManager = await prisma.user.create({
     data: {
-      email: 'manager.engineering@absensi.com',
+      email: 'manager.engineering@attendpro.app',
       password: hashedPassword,
       name: 'Michael Chen',
       role: Role.MANAGER,
@@ -160,7 +160,7 @@ async function main() {
   // Marketing Manager
   const marketingManager = await prisma.user.create({
     data: {
-      email: 'manager.marketing@absensi.com',
+      email: 'manager.marketing@attendpro.app',
       password: hashedPassword,
       name: 'David Wilson',
       role: Role.MANAGER,
@@ -182,7 +182,7 @@ async function main() {
     // Engineering Team
     prisma.user.create({
       data: {
-        email: 'john.doe@absensi.com',
+        email: 'john.doe@attendpro.app',
         password: hashedPassword,
         name: 'John Doe',
         role: Role.EMPLOYEE,
@@ -195,7 +195,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: 'jane.smith@absensi.com',
+        email: 'jane.smith@attendpro.app',
         password: hashedPassword,
         name: 'Jane Smith',
         role: Role.EMPLOYEE,
@@ -208,7 +208,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: 'budi.santoso@absensi.com',
+        email: 'budi.santoso@attendpro.app',
         password: hashedPassword,
         name: 'Budi Santoso',
         role: Role.EMPLOYEE,
@@ -221,7 +221,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: 'dewi.putri@absensi.com',
+        email: 'dewi.putri@attendpro.app',
         password: hashedPassword,
         name: 'Dewi Putri',
         role: Role.EMPLOYEE,
@@ -235,7 +235,7 @@ async function main() {
     // Marketing Team
     prisma.user.create({
       data: {
-        email: 'ahmad.wijaya@absensi.com',
+        email: 'ahmad.wijaya@attendpro.app',
         password: hashedPassword,
         name: 'Ahmad Wijaya',
         role: Role.EMPLOYEE,
@@ -248,7 +248,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: 'siti.rahayu@absensi.com',
+        email: 'siti.rahayu@attendpro.app',
         password: hashedPassword,
         name: 'Siti Rahayu',
         role: Role.EMPLOYEE,
@@ -262,7 +262,7 @@ async function main() {
     // HR Team
     prisma.user.create({
       data: {
-        email: 'riski.hidayat@absensi.com',
+        email: 'riski.hidayat@attendpro.app',
         password: hashedPassword,
         name: 'Riski Hidayat',
         role: Role.EMPLOYEE,
@@ -276,7 +276,7 @@ async function main() {
     // Finance Team
     prisma.user.create({
       data: {
-        email: 'linda.kusuma@absensi.com',
+        email: 'linda.kusuma@attendpro.app',
         password: hashedPassword,
         name: 'Linda Kusuma',
         role: Role.EMPLOYEE,
@@ -289,7 +289,7 @@ async function main() {
     // IT Support Team
     prisma.user.create({
       data: {
-        email: 'yoga.pratama@absensi.com',
+        email: 'yoga.pratama@attendpro.app',
         password: hashedPassword,
         name: 'Yoga Pratama',
         role: Role.EMPLOYEE,
@@ -328,7 +328,7 @@ async function main() {
   await Promise.all([
     prisma.holiday.create({
       data: {
-        name: 'Tahun Baru',
+        name: 'New Year',
         date: new Date(`${year}-01-01`),
         isRecurring: true,
         organizationId: organization.id,
@@ -336,7 +336,7 @@ async function main() {
     }),
     prisma.holiday.create({
       data: {
-        name: 'Hari Kemerdekaan Indonesia',
+        name: 'Independence Day',
         date: new Date(`${year}-08-17`),
         isRecurring: true,
         organizationId: organization.id,
@@ -344,7 +344,7 @@ async function main() {
     }),
     prisma.holiday.create({
       data: {
-        name: 'Hari Natal',
+        name: 'Christmas',
         date: new Date(`${year}-12-25`),
         isRecurring: true,
         organizationId: organization.id,
@@ -352,7 +352,7 @@ async function main() {
     }),
     prisma.holiday.create({
       data: {
-        name: 'Hari Buruh Internasional',
+        name: 'Labor Day',
         date: new Date(`${year}-05-01`),
         isRecurring: true,
         organizationId: organization.id,
@@ -418,7 +418,7 @@ async function main() {
       startDate: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000), // Next week
       endDate: new Date(today.getTime() + 9 * 24 * 60 * 60 * 1000),
       totalDays: 3,
-      reason: 'Cuti tahunan untuk liburan keluarga',
+      reason: 'Annual leave for family vacation',
       status: LeaveStatus.PENDING,
     }
   })
@@ -430,7 +430,7 @@ async function main() {
       startDate: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
       endDate: new Date(today.getTime() - 1 * 24 * 60 * 60 * 1000),
       totalDays: 2,
-      reason: 'Sakit demam',
+      reason: 'Fever',
       status: LeaveStatus.APPROVED,
       approvedById: hr.id,
       approvedAt: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000),
@@ -439,12 +439,12 @@ async function main() {
 
   console.log('✅ Seed completed successfully!')
   console.log('\n📋 Demo Accounts (password: demo123):')
-  console.log('├── admin@absensi.com (Admin)')
-  console.log('├── hr@absensi.com (HR)')
-  console.log('├── manager.engineering@absensi.com (Engineering Manager)')
-  console.log('├── manager.marketing@absensi.com (Marketing Manager)')
-  console.log('├── john.doe@absensi.com (Employee - Engineering)')
-  console.log('├── jane.smith@absensi.com (Employee - Engineering)')
+  console.log('├── admin@attendpro.app (Admin)')
+  console.log('├── hr@attendpro.app (HR)')
+  console.log('├── manager.engineering@attendpro.app (Engineering Manager)')
+  console.log('├── manager.marketing@attendpro.app (Marketing Manager)')
+  console.log('├── john.doe@attendpro.app (Employee - Engineering)')
+  console.log('├── jane.smith@attendpro.app (Employee - Engineering)')
   console.log('└── ... and more employees')
 }
 

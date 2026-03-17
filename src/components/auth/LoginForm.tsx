@@ -27,7 +27,7 @@ export function LoginForm() {
     if (result.success) {
       toast({
         title: 'Login Berhasil!',
-        description: 'Selamat datang di AbsenKu.',
+        description: 'Welcome to AttendPro.',
       })
     } else {
       toast({
@@ -41,10 +41,10 @@ export function LoginForm() {
   }
 
   const demoAccounts = [
-    { email: 'admin@absensi.com', role: 'Admin' },
-    { email: 'hr@absensi.com', role: 'HR' },
-    { email: 'manager.engineering@absensi.com', role: 'Manager' },
-    { email: 'john.doe@absensi.com', role: 'Karyawan' },
+    { email: 'admin@attendpro.app', role: 'Admin' },
+    { email: 'hr@attendpro.app', role: 'HR' },
+    { email: 'manager.engineering@attendpro.app', role: 'Manager' },
+    { email: 'john.doe@attendpro.app', role: 'Employee' },
   ]
 
   return (
@@ -71,7 +71,7 @@ export function LoginForm() {
             <div className="bg-primary rounded-lg p-2">
               <Clock className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold">AbsenKu</span>
+            <span className="text-2xl font-bold">AttendPro</span>
           </div>
 
           <h1 className="text-2xl font-bold mb-2">Selamat Datang Kembali!</h1>
@@ -168,11 +168,11 @@ export function LoginForm() {
         <div className="max-w-md text-center text-primary-foreground p-12">
           <div className="bg-primary-foreground/10 rounded-2xl p-8 mb-8">
             <Clock className="h-16 w-16 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">AbsenKu</h2>
-            <p className="opacity-80">Manajemen Kehadiran Modern</p>
+            <h2 className="text-2xl font-bold mb-2">AttendPro</h2>
+            <p className="opacity-80">Modern Attendance Management</p>
           </div>
           <p className="text-lg opacity-90">
-            &quot;AbsenKu membantu kami menghemat 10+ jam per minggu dalam administrasi kehadiran.&quot;
+            &quot;AttendPro helps us save 10+ hours per week on attendance administration.&quot;
           </p>
           <p className="mt-4 opacity-70">— HR Manager, PT. Teknologi Nusantara</p>
         </div>

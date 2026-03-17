@@ -10,7 +10,7 @@ const testimonials = [
     role: 'HR Manager',
     company: 'PT. Teknologi Nusantara',
     image: '',
-    content: 'AbsenKu sangat membantu kami mengelola kehadiran 200+ karyawan. Laporan real-time membuat pekerjaan HR jadi lebih efisien.',
+    content: 'AttendPro sangat membantu kami mengelola kehadiran 200+ karyawan. Laporan real-time membuat pekerjaan HR jadi lebih efisien.',
     rating: 5,
   },
   {
@@ -18,7 +18,7 @@ const testimonials = [
     role: 'CEO',
     company: 'Startup Digital Indonesia',
     image: '',
-    content: 'Sejak menggunakan AbsenKu, proses approval cuti jadi jauh lebih cepat. Tidak ada lagi email bolak-balik yang membuang waktu.',
+    content: 'Sejak menggunakan AttendPro, proses approval cuti jadi jauh lebih cepat. Tidak ada lagi email bolak-balik yang membuang waktu.',
     rating: 5,
   },
   {
@@ -42,7 +42,7 @@ const testimonials = [
     role: 'IT Manager',
     company: 'Bank Digital Sejahtera',
     image: '',
-    content: 'Keamanan data adalah prioritas kami. AbsenKu memenuhi standar keamanan yang kami butuhkan untuk data karyawan.',
+    content: 'Keamanan data adalah prioritas kami. AttendPro memenuhi standar keamanan yang kami butuhkan untuk data karyawan.',
     rating: 5,
   },
   {
@@ -50,7 +50,7 @@ const testimonials = [
     role: 'People Operations',
     company: 'E-Commerce Terpercaya',
     image: '',
-    content: 'Tim support AbsenKu sangat responsif. Setiap pertanyaan dijawab dengan cepat dan solutif.',
+    content: 'Tim support AttendPro sangat responsif. Setiap pertanyaan dijawab dengan cepat dan solutif.',
     rating: 5,
   },
 ]
@@ -70,7 +70,7 @@ export function Testimonials() {
             <span className="text-primary">1000+ Perusahaan</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Lihat bagaimana AbsenKu membantu perusahaan lain mengelola kehadiran karyawan mereka.
+            See how AttendPro helps other companies manage their employee attendance.
           </p>
         </motion.div>
 

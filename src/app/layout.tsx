@@ -14,24 +14,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AbsenKu - Aplikasi Absensi Karyawan Modern",
-  description: "Solusi modern untuk manajemen kehadiran karyawan. Clock-in/out digital, pengajuan cuti, dan laporan real-time dalam satu platform yang intuitif.",
-  keywords: ["absensi", "karyawan", "HR", "kehadiran", "cuti", "manajemen", "attendance", "employee"],
-  authors: [{ name: "AbsenKu Team" }],
+  title: "AttendPro - Employee Attendance Management System",
+  description: "Modern employee attendance management solution. Digital clock-in/out, leave management, and real-time reports in one intuitive platform.",
+  keywords: ["attendance", "employee", "HR", "time-tracking", "leave-management", "workforce", "clock-in", "clock-out"],
+  authors: [{ name: "AttendPro Team" }],
   icons: {
     icon: "/logo.svg",
   },
   openGraph: {
-    title: "AbsenKu - Aplikasi Absensi Karyawan Modern",
-    description: "Solusi modern untuk manajemen kehadiran karyawan",
-    url: "https://absensiku.id",
-    siteName: "AbsenKu",
+    title: "AttendPro - Employee Attendance Management System",
+    description: "Modern employee attendance management solution",
+    url: "https://attendpro.app",
+    siteName: "AttendPro",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AbsenKu - Aplikasi Absensi Karyawan Modern",
-    description: "Solusi modern untuk manajemen kehadiran karyawan",
+    title: "AttendPro - Employee Attendance Management System",
+    description: "Modern employee attendance management solution",
   },
 };
 
@@ -41,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >

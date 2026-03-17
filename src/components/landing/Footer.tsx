@@ -13,7 +13,7 @@ export function Footer() {
               <div className="bg-primary rounded-lg p-2">
                 <Clock className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold">AbsenKu</span>
+              <span className="text-xl font-bold">AttendPro</span>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
               Solusi modern untuk manajemen kehadiran karyawan. Mudah, cepat, dan akurat.
@@ -48,7 +48,7 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                <span>hello@absensiku.id</span>
+                <span>hello@attendpro.app</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
@@ -65,7 +65,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2025 AbsenKu. All rights reserved.
+            © 2025 AttendPro. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm text-muted-foreground">
             <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>

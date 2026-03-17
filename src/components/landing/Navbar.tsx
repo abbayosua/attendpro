@@ -23,7 +23,7 @@ export function Navbar() {
             <div className="bg-primary rounded-lg p-2">
               <Clock className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">AbsenKu</span>
+            <span className="text-xl font-bold">AttendPro</span>
           </div>
 
           {/* Desktop Navigation */}

@@ -114,7 +114,7 @@ Call the setup endpoint once:
 ```bash
 curl -X POST http://localhost:3000/api/auth/setup-supabase-users \
   -H "Content-Type: application/json" \
-  -d '{"secret": "setup-absenku-2025"}'
+  -d '{"secret": "setup-attendpro-2025"}'
 ```
 
 > ⚠️ **Important:** Delete the setup endpoint after creating users!
@@ -135,12 +135,12 @@ All accounts use the password: `demo123`
 
 | Email | Role | Description |
 |-------|------|-------------|
-| `admin@absensi.com` | Admin | Full system access |
-| `hr@absensi.com` | HR | User & leave management |
-| `manager.engineering@absensi.com` | Manager | Team oversight |
-| `manager.marketing@absensi.com` | Manager | Team oversight |
-| `john.doe@absensi.com` | Employee | Engineering team |
-| `jane.smith@absensi.com` | Employee | Engineering team |
+| `admin@attendpro.app` | Admin | Full system access |
+| `hr@attendpro.app` | HR | User & leave management |
+| `manager.engineering@attendpro.app` | Manager | Team oversight |
+| `manager.marketing@attendpro.app` | Manager | Team oversight |
+| `john.doe@attendpro.app` | Employee | Engineering team |
+| `jane.smith@attendpro.app` | Employee | Engineering team |
 
 ---
 

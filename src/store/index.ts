@@ -570,7 +570,7 @@ export const useStore = create<AppState>()(
       },
     }),
     {
-      name: 'absensi-storage',
+      name: 'attendpro-storage',
       partialize: (state) => ({
         // Don't persist auth state - use session cookies
       }),
