@@ -460,6 +460,7 @@ export function AttendanceContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <AttendanceMap
+                currentLocation={currentLocation}
                 clockInLocation={todayAttendance?.clockInLat && todayAttendance?.clockInLng 
                   ? { lat: todayAttendance.clockInLat, lng: todayAttendance.clockInLng }
                   : null}
@@ -471,7 +472,11 @@ export function AttendanceContent() {
                 height="350px"
               />
               
-              <div className="flex gap-4 text-sm">
+              <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse" />
+                  <span className="text-muted-foreground">Lokasi Anda</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-blue-500 rounded-full" />
                   <span className="text-muted-foreground">Kantor</span>
