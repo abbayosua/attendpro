@@ -133,6 +133,17 @@ function MapInvalidator() {
   return null
 }
 
+// Component to recenter map when position changes
+function MapRecenter({ center, zoom = 17 }: { center: [number, number]; zoom?: number }) {
+  const map = useMap()
+  
+  useEffect(() => {
+    map.setView(center, zoom)
+  }, [map, center, zoom])
+  
+  return null
+}
+
 function MapPickerInner({
   initialPosition,
   onPositionChange,
@@ -181,16 +192,13 @@ function MapPickerInner({
         onPositionChange(pos.coords.latitude, pos.coords.longitude)
       }
       
-      // Center map on new position
-      if (mapInstance) {
-        mapInstance.setView(newPosition, 17)
-      }
+      // Map recentering is handled by MapRecenter component
     } catch {
       setError('Tidak dapat mengambil lokasi. Pastikan izin lokasi diaktifkan.')
     } finally {
       setIsLoadingLocation(false)
     }
-  }, [readOnly, onPositionChange, mapInstance])
+  }, [readOnly, onPositionChange])
 
   const handleMapClick = useCallback((e: any) => {
     if (readOnly) return
@@ -248,6 +256,8 @@ function MapPickerInner({
         whenCreated={(map) => setMapInstance(map)}
       >
         <MapInvalidator />
+        {/* Recenter map when position changes (from GPS or click) */}
+        {position && <MapRecenter center={position} zoom={17} />}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
