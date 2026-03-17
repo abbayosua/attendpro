@@ -63,6 +63,13 @@ model Settings {
   officeLongitude  Float?
   officeAddress    String?
   
+  // Face Recognition Settings
+  requireFaceRecognition   Boolean @default(false)
+  requireLivenessDetection Boolean @default(true)
+  faceMatchThreshold       Float   @default(0.6)    // 60% match required
+  livenessScoreThreshold   Float   @default(0.7)    // 70% liveness required
+  allowSelfFaceRegistration Boolean @default(true)  // Employees can register themselves
+  
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
@@ -102,6 +109,12 @@ model User {
   employeeId     String?  // Employee ID from company
   position       String?
   joinDate       DateTime?
+  
+  // Face Registration
+  faceRegistered   Boolean   @default(false)
+  faceEmbedding    String?   // 128-dimension face embedding as JSON array
+  faceRegisteredAt DateTime?
+  facePhotoUrl     String?   // Reference photo URL
   
   // Relations
   organizationId String
@@ -195,6 +208,18 @@ model Attendance {
   // Photo Evidence (base64 or URL)
   clockInPhoto   String?  // Selfie photo at clock in
   clockOutPhoto  String?  // Selfie photo at clock out
+  
+  // Liveness Detection
+  clockInLivenessScore     Float?
+  clockInLivenessChallenge String?   // "blink", "turn_left", "turn_right", "smile", "nod"
+  clockOutLivenessScore    Float?
+  clockOutLivenessChallenge String?
+  
+  // Face Recognition
+  clockInFaceMatchScore  Float?    // 0.0 - 1.0 confidence score
+  clockInFaceVerified    Boolean   @default(false)
+  clockOutFaceMatchScore Float?
+  clockOutFaceVerified   Boolean   @default(false)
   
   // Additional Info
   notes          String?
